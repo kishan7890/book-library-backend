@@ -12,7 +12,7 @@ router.post("/register", async (req, res) => {
   const hashed = await bcrypt.hash(password, 10);
   const user = await User.create({ email, password: hashed });
   const token = generateToken(user);
-  res.cookie("token", token, { httpOnly: true }).json({ user: { email } });
+  res.cookie("token", token, { httpOnly: true , secure: true , sameSite: "none" , maxAge: 7 * 24 * 60 * 60 * 1000 }).json({ user: { email } });
 });
 
 router.post("/login", async (req, res) => {
@@ -22,11 +22,15 @@ router.post("/login", async (req, res) => {
     return res.status(401).json({ message: "Invalid credentials" });
   }
   const token = generateToken(user);
-  res.cookie("token", token, { httpOnly: true }).json({ user: { email } });
+  res.cookie("token", token, { httpOnly: true , secure: true , sameSite: "none" , maxAge: 7 * 24 * 60 * 60 * 1000}).json({ user: { email } });
 });
 
 router.get("/logout", (req, res) => {
-  res.clearCookie("token").json({ message: "Logged out" });
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none"
+  }).json({ message: "Logged out" });
 });
 
 router.get("/me", (req, res) => {
