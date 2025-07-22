@@ -14,9 +14,30 @@ const authenticate = (req, res, next) => {
 };
 
 router.get("/", authenticate, async (req, res) => {
-  const books = await MyBook.find({ userId: req.userId });
-  res.json({ books });
+  try {
+    const books = await MyBook.find({ userId: req.userId })
+      .populate("bookId", "title author description coverImage"); // include fields you need
+
+    const formatted = books.map(entry => ({
+      bookId: entry.bookId._id,
+      status: entry.status,
+      rating: entry.rating,
+      book: {
+        _id: entry.bookId._id,
+        title: entry.bookId.title,
+        author: entry.bookId.author,
+        description: entry.bookId.description,
+        coverImage: entry.bookId.coverImage,
+      },
+    }));
+
+    res.json({ books: formatted });
+  } catch (err) {
+    console.error("Error fetching my books:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
+
 
 router.post("/:bookId", authenticate, async (req, res) => {
   const { bookId } = req.params;
