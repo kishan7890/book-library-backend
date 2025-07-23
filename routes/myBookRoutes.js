@@ -58,4 +58,26 @@ router.patch("/:bookId/rating", authenticate, async (req, res) => {
   res.json({ message: "Rating updated" });
 });
 
+// DELETE /mybooks/:bookId - remove a book from user's list
+router.delete("/:bookId", authenticate, async (req, res) => {
+  try {
+    const { bookId } = req.params;
+
+    const deleted = await MyBook.findOneAndDelete({
+      userId: req.userId,
+      bookId,
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Book not found in My Books" });
+    }
+
+    res.json({ message: "Book removed from My Books" });
+  } catch (err) {
+    console.error("Error deleting book:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 module.exports = router;
