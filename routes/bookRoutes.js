@@ -1,6 +1,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const Book = require("../models/Book");
+const upload = require("../middleware/upload");
 
 const router = express.Router();
 
@@ -42,5 +43,39 @@ router.get("/:id/chapters", authenticate, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
+
+router.post(
+  "/add",
+  authenticate,
+  upload.fields([
+    { name: "coverImage", maxCount: 1 },
+    { name: "chapterImages", maxCount: 10 },
+  ]),
+  async (req, res) => {
+    try {
+      if (req.user.email !== "kishansahu9348@gmail.com") {
+        return res.status(403).json({ message: "Only admin can add books." });
+      }
+
+      const { title, author, description } = req.body;
+      const coverImage = req.files.coverImage?.[0]?.path || "";
+      const chapterImages = req.files.chapterImages?.map((file) => file.path) || [];
+
+      const newBook = new Book({
+        title,
+        author,
+        description,
+        coverImage,
+        chapterImages,
+      });
+
+      await newBook.save();
+      res.status(201).json({ message: "Book added successfully", book: newBook });
+    } catch (error) {
+      console.error("Add Book Error:", error);
+      res.status(500).json({ message: "Server error", error });
+    }
+  }
+);
 
 module.exports = router;

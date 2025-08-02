@@ -5,7 +5,7 @@ const User = require("../models/User");
 const router = express.Router();
 
 const generateToken = (user) =>
-  jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
 router.post("/register", async (req, res) => {
   const { email, password } = req.body;
