@@ -51,7 +51,6 @@ router.get("/:id/chapters", authenticate, async (req, res) => {
 
 router.post(
   "/add",
-  authenticate,
   upload.fields([
     { name: "coverImage", maxCount: 1 },
     { name: "chapterImages", maxCount: 10 },
